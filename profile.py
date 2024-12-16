@@ -35,10 +35,11 @@ def UE_node_x310(idx, x310_radio):
 	ue.component_manager_id = COMP_MANAGER_ID
 	ue.hardware_type = params.sdr_nodetype
 
-	if params.sdr_compute_image:
-		ue.disk_image = params.sdr_compute_image
-	else:
-		ue.disk_image = UBUNTU_IMG
+	# if params.sdr_compute_image:
+	# 	ue.disk_image = params.sdr_compute_image
+	# else:
+	# 	ue.disk_image = UBUNTU_IMG
+	ue.disk_image = params.sdr_compute_image
 
 	ue_radio_if = ue.addInterface("ue-usrp-if")
 	ue_radio_if.addAddress(rspec.IPv4Address("192.168.40.1", "255.255.255.0"))
