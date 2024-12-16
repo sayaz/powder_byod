@@ -227,30 +227,30 @@ params = pc.bindParameters()
 pc.verifyParameters()
 request = pc.makeRequestRSpec()
 
-role = "cn"
-cn_node = request.RawPC("cn5g-docker-host")
-cn_node.component_manager_id = COMP_MANAGER_ID
-cn_node.hardware_type = params.cn_nodetype
-cn_node.disk_image = UBUNTU_IMG
-cn_if = cn_node.addInterface("cn-if")
-cn_if.addAddress(rspec.IPv4Address("192.168.1.1", "255.255.255.0"))
-cn_link = request.Link("cn-link")
-# cn_link.bandwidth = 10*1000*1000
-cn_link.addInterface(cn_if)
+# role = "cn"
+# cn_node = request.RawPC("cn5g-docker-host")
+# cn_node.component_manager_id = COMP_MANAGER_ID
+# cn_node.hardware_type = params.cn_nodetype
+# cn_node.disk_image = UBUNTU_IMG
+# cn_if = cn_node.addInterface("cn-if")
+# cn_if.addAddress(rspec.IPv4Address("192.168.1.1", "255.255.255.0"))
+# cn_link = request.Link("cn-link")
+# # cn_link.bandwidth = 10*1000*1000
+# cn_link.addInterface(cn_if)
 
-if params.oai_cn_commit_hash:
-    oai_cn_hash = params.oai_cn_commit_hash
-else:
-    oai_cn_hash = DEFAULT_NR_CN_HASH
+# if params.oai_cn_commit_hash:
+#     oai_cn_hash = params.oai_cn_commit_hash
+# else:
+#     oai_cn_hash = DEFAULT_NR_CN_HASH
 
-cmd ="chmod +x /local/repository/bin/deploy-oai.sh"
-cn_node.addService(rspec.Execute(shell="bash", command=cmd))
+# cmd ="chmod +x /local/repository/bin/deploy-oai.sh"
+# cn_node.addService(rspec.Execute(shell="bash", command=cmd))
 
-cmd ="chmod +x /local/repository/bin/common.sh"
-cn_node.addService(rspec.Execute(shell="bash", command=cmd))
+# cmd ="chmod +x /local/repository/bin/common.sh"
+# cn_node.addService(rspec.Execute(shell="bash", command=cmd))
 
-cmd = "{} '{}' {}".format(OAI_DEPLOY_SCRIPT, oai_cn_hash, role)
-cn_node.addService(rspec.Execute(shell="bash", command=cmd))
+# cmd = "{} '{}' {}".format(OAI_DEPLOY_SCRIPT, oai_cn_hash, role)
+# cn_node.addService(rspec.Execute(shell="bash", command=cmd))
 
 # Allocate wifi resources?
 if params.alloc_wifi:
