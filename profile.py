@@ -246,7 +246,7 @@ if params.alloc_wifi:
     alloc_wifi_resources()
 
 # single x310 for gNB and UE for now
-UE_node_x310(1, params.x310_radio_UE)
+UE_node_x310(0, params.x310_radio_UE)
 	
 for frange in params.freq_ranges:
     request.requestSpectrum(frange.freq_min, frange.freq_max, 0)
