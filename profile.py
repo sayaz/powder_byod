@@ -28,7 +28,55 @@ OAI_DEPLOY_SCRIPT = os.path.join(BIN_PATH, "deploy-oai.sh")
 WIFI_AP_NODE_ID="ayaz-ap"
 WIFI_CLIENT_NODE_ID="ayaz-laptop"
 
+def x310_node_pair(idx, x310_radio):
+    role = "nodeb"
+    node = request.RawPC("{}-gnb-comp".format(x310_radio))
+    node.component_manager_id = COMP_MANAGER_ID
+    node.hardware_type = params.sdr_nodetype
 
+    if params.sdr_compute_image:
+        node.disk_image = params.sdr_compute_image
+    else:
+        node.disk_image = UBUNTU_IMG
+
+    node_radio_if = node.addInterface("usrp_if")
+    node_radio_if.addAddress(rspec.IPv4Address("192.168.40.1", "255.255.255.0"))
+
+    radio_link = request.Link("radio-link-{}".format(idx))
+    radio_link.bandwidth = 10*1000*1000
+    radio_link.addInterface(node_radio_if)
+
+    radio = request.RawPC("{}-gnb-sdr".format(x310_radio))
+    radio.component_id = x310_radio
+    radio.component_manager_id = COMP_MANAGER_ID
+    radio_link.addNode(radio)
+
+    nodeb_cn_if = node.addInterface("nodeb-cn-if")
+    nodeb_cn_if.addAddress(rspec.IPv4Address("192.168.1.{}".format(idx + 2), "255.255.255.0"))
+    cn_link.addInterface(nodeb_cn_if)
+
+    if params.oai_ran_commit_hash:
+        oai_ran_hash = params.oai_ran_commit_hash
+    else:
+        oai_ran_hash = DEFAULT_NR_RAN_HASH
+
+    cmd ="chmod +x /local/repository/bin/deploy-oai.sh"
+    node.addService(rspec.Execute(shell="bash", command=cmd))
+
+    cmd ="chmod +x /local/repository/bin/common.sh"
+    node.addService(rspec.Execute(shell="bash", command=cmd))
+
+    cmd ="chmod +x /local/repository/bin/tune-cpu.sh"
+    node.addService(rspec.Execute(shell="bash", command=cmd))
+
+    cmd ="chmod +x /local/repository/bin/tune-sdr-iface.sh"
+    node.addService(rspec.Execute(shell="bash", command=cmd))
+
+    cmd = "{} '{}' {}".format(OAI_DEPLOY_SCRIPT, oai_ran_hash, role)
+    node.addService(rspec.Execute(shell="bash", command=cmd))
+    node.addService(rspec.Execute(shell="bash", command="/local/repository/bin/tune-cpu.sh"))
+    node.addService(rspec.Execute(shell="bash", command="/local/repository/bin/tune-sdr-iface.sh"))
+	
 def UE_node_x310(idx, x310_radio):
 	role = "ue"
 	ue = request.RawPC("{}-ue-comp".format(x310_radio))
@@ -180,9 +228,17 @@ indoor_ota_x310s = [
     ("ota-x310-3", "UE X310 #3")
 ]
 
+# pc.defineParameter(
+#     name="x310_radio_UE",
+#     description="x310 Radio (for sensing)",
+#     typ=portal.ParameterType.STRING,
+#     defaultValue=indoor_ota_x310s[0],
+#     legalValues=indoor_ota_x310s
+# )
+
 pc.defineParameter(
-    name="x310_radio_UE",
-    description="x310 Radio (for sensing)",
+    name="x310_radio",
+    description="X310 Radio (for OAI gNodeB)",
     typ=portal.ParameterType.STRING,
     defaultValue=indoor_ota_x310s[0],
     legalValues=indoor_ota_x310s
@@ -217,37 +273,37 @@ params = pc.bindParameters()
 pc.verifyParameters()
 request = pc.makeRequestRSpec()
 
-# role = "cn"
-# cn_node = request.RawPC("cn5g-docker-host")
-# cn_node.component_manager_id = COMP_MANAGER_ID
-# cn_node.hardware_type = params.cn_nodetype
-# cn_node.disk_image = UBUNTU_IMG
-# cn_if = cn_node.addInterface("cn-if")
-# cn_if.addAddress(rspec.IPv4Address("192.168.1.1", "255.255.255.0"))
-# cn_link = request.Link("cn-link")
-# # cn_link.bandwidth = 10*1000*1000
-# cn_link.addInterface(cn_if)
+role = "cn"
+cn_node = request.RawPC("cn5g-docker-host")
+cn_node.component_manager_id = COMP_MANAGER_ID
+cn_node.hardware_type = params.cn_nodetype
+cn_node.disk_image = UBUNTU_IMG
+cn_if = cn_node.addInterface("cn-if")
+cn_if.addAddress(rspec.IPv4Address("192.168.1.1", "255.255.255.0"))
+cn_link = request.Link("cn-link")
+# cn_link.bandwidth = 10*1000*1000
+cn_link.addInterface(cn_if)
 
-# if params.oai_cn_commit_hash:
-#     oai_cn_hash = params.oai_cn_commit_hash
-# else:
-#     oai_cn_hash = DEFAULT_NR_CN_HASH
+if params.oai_cn_commit_hash:
+    oai_cn_hash = params.oai_cn_commit_hash
+else:
+    oai_cn_hash = DEFAULT_NR_CN_HASH
 
-# cmd ="chmod +x /local/repository/bin/deploy-oai.sh"
-# cn_node.addService(rspec.Execute(shell="bash", command=cmd))
+cmd ="chmod +x /local/repository/bin/deploy-oai.sh"
+cn_node.addService(rspec.Execute(shell="bash", command=cmd))
 
-# cmd ="chmod +x /local/repository/bin/common.sh"
-# cn_node.addService(rspec.Execute(shell="bash", command=cmd))
+cmd ="chmod +x /local/repository/bin/common.sh"
+cn_node.addService(rspec.Execute(shell="bash", command=cmd))
 
-# cmd = "{} '{}' {}".format(OAI_DEPLOY_SCRIPT, oai_cn_hash, role)
-# cn_node.addService(rspec.Execute(shell="bash", command=cmd))
+cmd = "{} '{}' {}".format(OAI_DEPLOY_SCRIPT, oai_cn_hash, role)
+cn_node.addService(rspec.Execute(shell="bash", command=cmd))
 
 # Allocate wifi resources?
 if params.alloc_wifi:
     alloc_wifi_resources()
 
 # single x310 for gNB and UE for now
-UE_node_x310(0, params.x310_radio_UE)
+x310_node_pair(0, params.x310_radio)
 	
 for frange in params.freq_ranges:
     request.requestSpectrum(frange.freq_min, frange.freq_max, 0)
