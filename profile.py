@@ -8,14 +8,6 @@ import geni.rspec.igext as IG
 import geni.rspec.emulab.pnext as PN
 import geni.rspec.emulab.spectrum as spectrum
 
-tourDescription = """
-# The following will be deployed:
-
-- 1x wifi-ap
-- 1x wifi-client
-- 1x wifi-util (server)
-
-"""
 
 BIN_PATH = "/local/repository/bin"
 ETC_PATH = "/local/repository/etc"
@@ -270,9 +262,9 @@ UE_node_x310(2, params.x310_radio_UE)
 for frange in params.freq_ranges:
     request.requestSpectrum(frange.freq_min, frange.freq_max, 0)
 
-tour = IG.Tour()
-tour.Description(IG.Tour.MARKDOWN, tourDescription)
-tour.Instructions(IG.Tour.MARKDOWN, tourInstructions)
-request.addTour(tour)
+# tour = IG.Tour()
+# tour.Description(IG.Tour.MARKDOWN, tourDescription)
+# tour.Instructions(IG.Tour.MARKDOWN, tourInstructions)
+# request.addTour(tour)
 
 pc.printRequestRSpec(request)
