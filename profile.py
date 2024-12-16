@@ -29,6 +29,52 @@ WIFI_AP_NODE_ID="ayaz-ap"
 WIFI_CLIENT_NODE_ID="ayaz-laptop"
 
 
+def UE_node_x310(idx, x310_radio):
+	role = "ue"
+	ue = request.RawPC("{}-ue-comp".format(x310_radio))
+	ue.component_manager_id = COMP_MANAGER_ID
+	ue.hardware_type = params.sdr_nodetype
+
+	if params.sdr_compute_image:
+		ue.disk_image = params.sdr_compute_image
+	else:
+		ue.disk_image = UBUNTU_IMG
+
+	ue_radio_if = ue.addInterface("ue-usrp-if")
+	ue_radio_if.addAddress(rspec.IPv4Address("192.168.40.1", "255.255.255.0"))
+
+	radio_link = request.Link("radio-link-{}".format(idx))
+	radio_link.bandwidth = 10*1000*1000
+	radio_link.addInterface(ue_radio_if)
+
+	radio = request.RawPC("{}-ue-sdr".format(x310_radio))
+	radio.component_id = x310_radio
+	radio.component_manager_id = COMP_MANAGER_ID
+	radio_link.addNode(radio)
+
+	if params.oai_ran_commit_hash:
+		oai_ran_hash = params.oai_ran_commit_hash
+	else:
+		oai_ran_hash = DEFAULT_NR_RAN_HASH
+
+	cmd ="chmod +x /local/repository/bin/deploy-oai.sh"
+	ue.addService(rspec.Execute(shell="bash", command=cmd))
+
+	cmd ="chmod +x /local/repository/bin/common.sh"
+	ue.addService(rspec.Execute(shell="bash", command=cmd))
+
+	cmd ="chmod +x /local/repository/bin/tune-cpu.sh"
+	ue.addService(rspec.Execute(shell="bash", command=cmd))
+
+	cmd ="chmod +x /local/repository/bin/tune-sdr-iface.sh"
+	ue.addService(rspec.Execute(shell="bash", command=cmd))
+
+	cmd = '{} "{}" {}'.format(OAI_DEPLOY_SCRIPT, oai_ran_hash, role)
+	ue.addService(rspec.Execute(shell="bash", command=cmd))
+	ue.addService(rspec.Execute(shell="bash", command="/local/repository/bin/tune-cpu.sh"))
+	ue.addService(rspec.Execute(shell="bash", command="/local/repository/bin/tune-sdr-iface.sh"))
+
+
 def alloc_wifi_resources():
     # Allocate WiFi utility node
     util = request.RawPC("wifi-util")
