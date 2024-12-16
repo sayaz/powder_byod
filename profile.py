@@ -176,10 +176,7 @@ pc.defineParameter(
 )
 
 indoor_ota_x310s = [
-    ("ota-x310-1", "gNB"),
-    ("ota-x310-2", "UE X310 #2"),
-    ("ota-x310-3", "UE X310 #3"),
-    ("ota-x310-4", "UE X310 #4"),
+    ("ota-x310-3", "UE X310 #3")
 ]
 
 pc.defineParameter(
@@ -194,7 +191,7 @@ pc.defineParameter(
     name="x310_radio_UE",
     description="x310 Radio (for OAI UE 3)",
     typ=portal.ParameterType.STRING,
-    defaultValue=indoor_ota_x310s[3],
+    defaultValue=indoor_ota_x310s[0],
     legalValues=indoor_ota_x310s
 )
 
