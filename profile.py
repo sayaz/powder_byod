@@ -8,6 +8,23 @@ import geni.rspec.igext as IG
 import geni.rspec.emulab.pnext as PN
 import geni.rspec.emulab.spectrum as spectrum
 
+tourDescription = """
+# OAI 5G using the POWDER Indoor OTA Lab 
+
+This profile instantiates an experiment for testing OAI 5G with SDR based UEs in
+standalone (SA) mode using resources in the POWDER indoor over-the-air (OTA) lab.
+The indoor OTA lab includes:
+
+You can find a diagram of the lab layout here: [OTA Lab
+Diagram](https://gitlab.flux.utah.edu/powderrenewpublic/powder-deployment/-/raw/master/diagrams/ota-lab.png)
+
+The following will be deployed:
+
+- 1x wifi-ap
+- 1x wifi-client
+- 1x wifi-util (server)
+
+"""
 
 BIN_PATH = "/local/repository/bin"
 ETC_PATH = "/local/repository/etc"
